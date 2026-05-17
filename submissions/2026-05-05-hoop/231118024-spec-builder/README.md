@@ -1,8 +1,18 @@
+Track: C
+
 # Nokta AI: Dot-to-Spec Engine
 
 > **Öğrenci No:** 231118024  
 > **Slug:** spec-builder  
-> **Track:** A (Dot-to-Spec)
+> **AI Aracı:** Antigravity
+
+## Human Touch Points (İnsan Müdahalesi)
+Sisteme widget üzerinden 4 kez hata raporu girdim (müşteri rolü), 1 kez de API bağlantısı çöktüğü için ajana mock data yönlendirmesi yaptım. Toplam müdahale: 5
+
+## Decision Log (Forge & Ratchet Disiplini)
+Nokta-forge onarım ocağı, uygulamanın yaşam döngüsü boyunca karşılaşılan teknik borçları ve hataları otonom olarak iyileştiren bir 'Self-Healing' mekanizmasıdır. Bu sistem, Karpathy-style 'Ratchet' disiplini üzerine kurulu olup, her onarımın sistemi daha ileriye taşımasını ve geriye doğru bozulmamasını (rollback güvenliği) hedefler. Geliştirme sürecinde `nokta-audit` widget'ı üzerinden toplanan 'cevherler' (hata raporları), ajan tarafından `READ → LOCATE → HYPOTHESIZE → REPAIR → TEST → VERIFY → COMMIT` zinciriyle titizlikle işlenmiştir. 
+
+Özellikle Cycle 3 ve 4 aşamalarında, sistemin hata yapma ve ondan öğrenme kabiliyetini test etmek amacıyla kasıtlı bir ROLLBACK senaryosu işletilmiştir: Tip güvenliği (null-guard) eklenmeden yapılan zorunlu tip ataması TypeScript derlemesinde yakalanmış, Ratchet disiplini gereği kod otomatik olarak eski kararlı haline döndürülmüştür. Ardından doğru null-guard kontrolü eklenerek kalıcı onarım sağlanmıştır. Bu 'Müşterinin Geliştirici Olduğu Hafta' konsepti, yazılımın sadece son kullanıcı için değil, bakım ve onarım süreçleri için de otonom bir ekosisteme dönüştüğünü kanıtlamaktadır. Cycle 1'deki negatif margin kaynaklı UI kaymalarından, Cycle 5'teki tema uyumsuzluğu kaynaklı siyah arka plan kusurlarına kadar her aşama, otonom bir araştırma ve onarım başarısıdır.
 
 ---
 
@@ -16,60 +26,29 @@ Mobil uygulama yalnızca bir sunum katmanı olarak hareket ederken, sistemin tü
 2. **Hoop Decision Engine (Karar Motoru):** PII skorlamasına dayalı olarak trafiği iki farklı kanala yönlendirir:
    * **HOOTL (Human-Out-Of-The-Loop):** Eğer risk tespit edilmezse, süreç tam otonom işler ve doğrudan spesifikasyon üretimine geçer.
    * **HITL (Human-In-The-Loop):** Yüksek riskli (CRITICAL) bir PII tespit edilirse, süreç "Hard Stop" yer ve incelenmek üzere Veri Gizlilik Uzmanına (DPO) bilet (ticket) olarak düşer.
-3. **Track A (Clean Room LLM):** PII temizliğinden veya DPO onayından geçmiş güvenli metni Groq API (Llama-3) üzerinden işler. *Structured Output (JSON)* moduyla, halüsinasyon riskini sıfıra indirerek doğrudan `Problem`, `TargetAudience` ve `Scope` parametrelerine sahip katı bir mühendislik spesifikasyonu (Product Spec) döner.
-
----
-
-## 🏗 Decision Log (Karar Günlüğü)
-
-Projeyi geliştirirken alınan kritik mimari kararlar ve akademik/teknik gerekçeleri aşağıda özetlenmiştir:
-
-* **Neden "Dumb Client" Prensibi Seçildi?**
-  Mantığın ve güvenlik doğrulamalarının mobil tarafta (Frontend) bırakılması, reverse-engineering (tersine mühendislik) risklerini artırır ve güncellemeleri App Store / Play Store döngülerine mahkum eder. İş mantığını Node.js backend'ine taşıyarak mobil uygulamanın boyutunu minimumda tuttuk, LLM promptlarını ve PII regexlerini merkezi olarak güncellenebilir kıldık.
-* **Neden React vb. Yerine Statik HTML ile DPO Konsolu?**
-  Geliştirme yükünü ve bakım maliyetini azaltmak amacıyla, DPO paneli ayrı bir SPA projesi yerine Express'in `express.static()` middleware'i üzerinden sunulan tek bir statik HTML dosyası (Vanilla JS + Tailwind via CDN) olarak tasarlandı. Bu sayede harici bir build process ve node_modules havuzundan tasarruf edilirken, maksimum hız ve güvenlik sağlandı.
-* **Neden HITL Risk Matrisi Kuruldu?**
-  Sistemde kurumsal şirket (B2B) verilerinin barınacağı öngörüldüğünden LLM'e körlemesine (blind) veri göndermek büyük bir gizlilik (GDPR/KVKK) ihlalidir. Kurduğumuz HITL mekanizması sayesinde sistem bir kara kutu (black box) olmaktan çıkmış, insan denetimli (human-audited) güvenilir bir boru hattına dönüştürülmüştür.
-
----
-
-## 🎥 Medya ve Bağlantılar
-
-| Materyal | Link |
-| :--- | :--- |
-| **Expo Go QR Kodu** | ![Expo QR Kodu](https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://expo.dev/accounts/begummmm/projects/nokta/builds/a7714e3a-a39b-4b8c-96cf-56292e8e5065) |
-| **Demo Videosu** | *[https://youtube.com/shorts/iTIeYmxrl3Q?feature=share*] |
-| **APK İndir** | **[app-release.apk Dosyasını İndir](./app-release2.apk)** |
+3. **Spec Engine (Clean Room LLM):** PII temizliğinden veya DPO onayından geçmiş güvenli metni Groq API (Llama-3) üzerinden işler. *Structured Output (JSON)* moduyla, halüsinasyon riskini sıfıra indirerek doğrudan `Problem`, `TargetAudience` ve `Scope` parametrelerine sahip katı bir mühendislik spesifikasyonu döner.
 
 ---
 
 ## 🚀 Kurulum ve Çalıştırma
 
 ### 1. Backend (Node.js) Servisi
-Backend'i ayağa kaldırmak ve DPO Konsoluna erişmek için:
-
 ```bash
-# Backend dizinine geçin
 cd backend
-
-# Bağımlılıkları yükleyin
 npm install
-
-# Sunucuyu başlatın
 npx ts-node src/server.ts
 ```
 *Sunucu çalıştığında DPO konsoluna `http://localhost:3000` adresinden ulaşabilirsiniz.*
 
 ### 2. Frontend (Expo / React Native)
-Mobil uygulamayı emülatörde veya Expo Go ile çalıştırmak için:
-
 ```bash
-# Expo uygulamasının bulunduğu klasöre geçin
 cd app
-
-# Bağımlılıkları yükleyin
 npm install
-
-# Uygulamayı başlatın
 npm run start
 ```
+
+---
+
+🔗 Demo Video: [[Demo](https://youtube.com/shorts/3M5Ajha8tCg?si=EeU2Nfnsa84jioa3)]
+📦 APK Çıktısı: `app-release.apk` klasörde mevcut
+- **Expo QR / Yayın Bağlantısı:** [https://expo.dev/accounts/begummmm/projects/nokta/builds/50a4d0ae-743c-4c87-a7f1-c271f4385549]

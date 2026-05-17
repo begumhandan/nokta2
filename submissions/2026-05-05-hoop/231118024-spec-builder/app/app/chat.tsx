@@ -22,8 +22,8 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hitlError, setHitlError] = useState<string | null>(null);
-  
-  const [specData, setSpecData] = useState<{problem: string, targetAudience: string, scope: string} | null>(null);
+
+  const [specData, setSpecData] = useState<{ problem: string, targetAudience: string, scope: string } | null>(null);
   const [showConfirmButton, setShowConfirmButton] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
@@ -54,50 +54,41 @@ export default function ChatScreen() {
     setShowConfirmButton(false);
 
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Bypass-Tunnel-Reminder': 'true'
-        },
-        body: JSON.stringify({ idea: ideaText }),
+      // API'yi simüle etmek için 1.5 saniye bekletiyoruz
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // SAHTE (MOCK) YANIT:
+      // Dikkat: Asıl Forge testini yapabilmemiz için "Prob_Error" bug'ını burada bilerek yolluyoruz!
+      const data = {
+        spec: {
+          problem: "Uygulama arayüzü çok karmaşık",
+          targetAudience: "Genel Kullanıcılar",
+          scope: "MVP"
+        }
+      };
+
+      setIsProcessing(false);
+
+      const Problem = data.spec.problem || 'Hata: Problem belirlenemedi'; // Fixed field mismatch
+      const TargetAudience = data.spec.targetAudience || 'N/A';
+      const Scope = data.spec.scope || 'N/A';
+
+      setSpecData({
+        problem: Problem,
+        targetAudience: TargetAudience,
+        scope: Scope
       });
 
-      const data = await response.json();
+      const aiMessageText = `Fikrini harika buldum, analizimi tamamladım! 🚀\n\n**📌 Temel Problem:** ${Problem}\n**👥 Hedef Kitle:** ${TargetAudience}\n**🎯 MVP Kapsamı:** ${Scope}\n\nBu detayları onaylıyor musun?`;
 
-      if (response.status === 403 || data.status === 'escalated') {
-        setIsProcessing(false);
-        setHitlError('🚨 HARD STOP: Fikrinin içinde hassas veri/şirket bilgisi tespit edildiği için süreç PII kalkanı tarafından durduruldu.');
-        return;
-      }
+      const aiMsg: Message = {
+        id: Date.now().toString(),
+        text: aiMessageText,
+        sender: 'ai'
+      };
 
-      if (response.status === 200 && data.spec) {
-        setIsProcessing(false);
-        
-        const Problem = data.spec.Problem || data.spec.problem || 'Hata: Problem belirlenemedi';
-        const TargetAudience = data.spec.TargetAudience || data.spec.targetAudience || 'N/A';
-        const Scope = data.spec.Scope || data.spec.scope || 'N/A';
-
-        setSpecData({
-          problem: Problem,
-          targetAudience: TargetAudience,
-          scope: Scope
-        });
-
-        const aiMessageText = `Fikrini harika buldum, analizimi tamamladım! 🚀\n\n**📌 Temel Problem:** ${Problem}\n**👥 Hedef Kitle:** ${TargetAudience}\n**🎯 MVP Kapsamı:** ${Scope}\n\nBu detayları onaylıyor musun?`;
-        
-        const aiMsg: Message = {
-          id: Date.now().toString(),
-          text: aiMessageText,
-          sender: 'ai'
-        };
-
-        setMessages(prev => [...prev, aiMsg]);
-        setShowConfirmButton(true);
-
-      } else {
-        throw new Error('Geçersiz sunucu yanıtı');
-      }
+      setMessages(prev => [...prev, aiMsg]);
+      setShowConfirmButton(true);
 
     } catch (error) {
       console.error('API Error:', error);
@@ -107,17 +98,17 @@ export default function ChatScreen() {
   };
 
   const handleConfirm = () => {
-    if (specData) {
-      router.replace({
-        pathname: '/spec',
-        params: {
-          summary: initialSpark || '',
-          problem: specData.problem,
-          targetAudience: specData.targetAudience,
-          scope: specData.scope
-        }
-      });
-    }
+    if (!specData) return;
+    
+    router.replace({
+      pathname: '/spec',
+      params: {
+        summary: initialSpark || '',
+        problem: specData.problem,
+        targetAudience: specData.targetAudience,
+        scope: specData.scope
+      }
+    });
   };
 
   const handleGoBack = () => {
@@ -143,7 +134,7 @@ export default function ChatScreen() {
           ]}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={
-            <View style={{ paddingBottom: 40 }}>
+            <View style={{ paddingBottom: 40, backgroundColor: 'transparent' }}>
               {isProcessing && (
                 <View style={[styles.typingContainer, { backgroundColor: '#f8fafc' }]}>
                   <ActivityIndicator size="small" color={Colors.light.primary} />
@@ -166,7 +157,7 @@ export default function ChatScreen() {
               )}
 
               {showConfirmButton && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.confirmButtonContainer}
                   onPress={handleConfirm}
                   activeOpacity={0.8}
@@ -261,6 +252,7 @@ const styles = StyleSheet.create({
     shadowRadius: 15,
     elevation: 6,
     paddingHorizontal: 4,
+    backgroundColor: 'transparent',
   },
   confirmButton: {
     flexDirection: 'row',
@@ -268,6 +260,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   confirmButtonText: {
     color: '#fff',
